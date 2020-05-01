@@ -1,7 +1,7 @@
 import turtle
 
-WIDTH = 800
-HEIGHT = 600
+WIDTH = 1000
+HEIGHT = 800
 PADDLE_MARGIN = 50
 
 
@@ -59,10 +59,19 @@ class Paddle:
 
     def move_up(self):
         y = self.paddle.ycor() + self.step
+        height_margin = self.dimension * self.stretch_wid
+        limit = HEIGHT / 2
+        if y + height_margin > limit:
+            y = limit - height_margin
         self.paddle.sety(y)
 
     def move_down(self):
-        self.paddle.sety(self.paddle.ycor() - self.step)
+        y = self.paddle.ycor() - self.step
+        height_margin = self.dimension * self.stretch_wid
+        limit = (HEIGHT / 2) * -1
+        if y - height_margin < limit:
+            y = limit + height_margin
+        self.paddle.sety(y)
 
     def get_borders(self):
         side_margin = self.dimension * self.stretch_len
