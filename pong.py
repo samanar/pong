@@ -187,7 +187,7 @@ class Game:
             self.ball.reverse_dx()
 
     def run(self):
-        self.window.write_score(self.player_left, self.player_right)
+        self.window.write_score()
         while True:
             self.window.win.update()
             self.ball.move()
