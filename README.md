@@ -6,3 +6,4 @@ ping game using turtle in python
 - [ ] add difficulty as an argument
 - [ ] add sound tracks for bouncing
 - [ ] add sound track for getting points 
+- [ ] add how to install and run documentation 
