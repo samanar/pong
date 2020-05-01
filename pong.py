@@ -1,24 +1,44 @@
 import turtle
 
+WIDTH = 800
+HEIGHT = 600
+PADDLE_MARGIN = 50
+
+
+class Pen:
+    def __init__(self):
+        self.pen = turtle.Turtle()
+        self.pen.speed(0)
+        self.pen.color('white')
+        self.pen.penup()
+        self.pen.hideturtle()
+        self.pen.goto(0, HEIGHT / 2 - PADDLE_MARGIN)
+
+    def write(self, score_left, score_right):
+        self.pen.clear()
+        self.pen.write('{} : {}'.format(score_left, score_right), align='center', font=('Courier', 22, 'normal'))
+
 
 class Window:
     title = "PONG"
 
-    def __init__(self, width, height):
+    def __init__(self):
+        self.__initiate_window()
+        self.__initiate_pens()
+
+    def __initiate_window(self):
         self.win = turtle.Screen()
         self.win.title(self.title)
         self.win.bgcolor("black")
-        self.width = width
-        self.height = height
-        self.win.setup(width, height)
+        self.win.setup(WIDTH, HEIGHT)
         self.win.tracer(0)
         self.win.listen()
 
-    def get_width(self):
-        return self.width
+    def __initiate_pens(self):
+        self.pen = Pen()
 
-    def get_height(self):
-        return self.height
+    def write_score(self, score_left=0, score_right=0):
+        self.pen.write(score_left, score_right)
 
 
 class Paddle:
@@ -48,9 +68,10 @@ class Paddle:
         side_margin = self.dimension * self.stretch_len
         height_margin = self.dimension * self.stretch_wid
         side = self.initial_position + side_margin if self.initial_position < 0 else self.initial_position - side_margin
+        center = self.initial_position
         top = self.paddle.ycor() + height_margin
         bottom = self.paddle.ycor() - height_margin
-        return top, side, bottom
+        return top, side, bottom, center
 
 
 class Ball:
@@ -58,9 +79,7 @@ class Ball:
     dx = 0.035
     dy = 0.035
 
-    def __init__(self, window_width, window_height):
-        self.window_height = window_height
-        self.window_width = window_width
+    def __init__(self):
         self.ball = turtle.Turtle()
         self.ball.speed(0)
         self.ball.color('white')
@@ -94,7 +113,7 @@ class Ball:
         self.reverse_dx()
 
     def __reflect_if_out(self):
-        top_border = (self.window_height / 2) - (self.dimension / 2)
+        top_border = (HEIGHT / 2) - (self.dimension / 2)
         bottom_border = top_border * -1
 
         if self.ball.ycor() > top_border:
@@ -112,19 +131,16 @@ class Ball:
 
 
 class Game:
-    WIDTH = 800
-    HEIGHT = 600
-    PADDLE_MARGIN = 50
     PADDLE_A_POSITION = -(WIDTH / 2) + PADDLE_MARGIN
     PADDLE_B_POSITION = WIDTH / 2 - PADDLE_MARGIN
 
     def __init__(self):
         self.player_left = 0
         self.player_right = 0
-        self.window = Window(self.WIDTH, self.HEIGHT)
+        self.window = Window()
         self.paddle_left = Paddle(self.PADDLE_A_POSITION)
         self.paddle_right = Paddle(self.PADDLE_B_POSITION)
-        self.ball = Ball(window_width=self.window.get_width(), window_height=self.window.get_height())
+        self.ball = Ball()
         self.__bind_keys()
 
     def __bind_keys(self):
@@ -134,28 +150,39 @@ class Game:
         self.window.win.onkeypress(self.paddle_right.move_down, 'Down')
         self.window.win.onkeypress(self.hit_paddle, 't')
 
+    def update_scores(self):
+        self.window.write_score(self.player_left, self.player_right)
+
     def is_goal(self):
-        right_border = (self.window.get_width() / 2) - self.ball.get_dimension() / 2
+        right_border = (WIDTH / 2) - self.ball.get_dimension() / 2
         left_border = right_border * -1
 
         if self.ball.xcor() > right_border:
             self.player_left += 1
+            self.update_scores()
             self.ball.reset_reverse_position()
 
         elif self.ball.xcor() < left_border:
             self.player_right += 1
+            self.update_scores()
             self.ball.reset_reverse_position()
 
     def hit_paddle(self):
-        left_top, left_side, left_bottom = self.paddle_left.get_borders()
-        print(left_side, left_top, left_bottom)
-        right_top, right_side, right_bottom = self.paddle_right.get_borders()
-        print(right_side, right_top, right_bottom)
+        left_top, left_side, left_bottom, left_center = self.paddle_left.get_borders()
+        if (left_side > self.ball.xcor() > left_center) and (left_top > self.ball.ycor() > left_bottom):
+            self.ball.setx(left_side)
+            self.ball.reverse_dx()
+        right_top, right_side, right_bottom, right_center = self.paddle_right.get_borders()
+        if (right_side < self.ball.xcor() < right_center) and (right_top > self.ball.ycor() > right_bottom):
+            self.ball.setx(right_side)
+            self.ball.reverse_dx()
 
     def run(self):
+        self.window.write_score(self.player_left, self.player_right)
         while True:
             self.window.win.update()
             self.ball.move()
+            self.hit_paddle()
             self.is_goal()
 
 
