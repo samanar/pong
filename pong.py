@@ -1,8 +1,13 @@
 import turtle
+import os
 
 WIDTH = 1000
 HEIGHT = 800
 PADDLE_MARGIN = 50
+
+
+def play_bounce_sound():
+    os.system('aplay bounce.wav&')
 
 
 class Pen:
@@ -42,7 +47,7 @@ class Window:
 
 
 class Paddle:
-    step = 20
+    step = 35
     stretch_len = 0.7
     dimension = 10
     stretch_wid = 5
@@ -85,6 +90,11 @@ class Paddle:
 
 class Ball:
     dimension = 20
+    d_step = 0.02
+    min_dx = 0.035
+    min_dy = 0.035
+    max_dx = 0.1
+    max_dy = 0.1
     dx = 0.035
     dy = 0.035
 
@@ -95,6 +105,36 @@ class Ball:
         self.ball.shape('circle')
         self.ball.penup()
         self.ball.goto(0, 0)
+
+    def increase_speed(self):
+        if self.dx < 0:
+            if self.dx - self.d_step > (self.max_dx * -1):
+                self.dx -= self.d_step
+        elif self.dx > 0:
+            if self.dx + self.d_step < self.max_dx:
+                self.dx += self.d_step
+
+        if self.dy < 0:
+            if self.dy - self.d_step > (self.max_dy * -1):
+                self.dy -= self.d_step
+        elif self.dy > 0:
+            if self.dy + self.d_step < self.max_dy:
+                self.dy += self.d_step
+
+    def decrease_speed(self):
+        if self.dx < 0:
+            if self.dx + self.d_step < (self.min_dx * -1):
+                self.dx = self.d_step
+        elif self.dx > 0:
+            if self.dx - self.d_step > self.min_dx:
+                self.dx -= self.d_step
+
+        if self.dy < 0:
+            if self.dy + self.d_step < (self.min_dy * -1):
+                self.dy += self.d_step
+        elif self.dy > 0:
+            if self.dy - self.d_step > self.min_dy:
+                self.dy -= self.d_step
 
     def get_dimension(self):
         return self.dimension
@@ -126,10 +166,12 @@ class Ball:
         bottom_border = top_border * -1
 
         if self.ball.ycor() > top_border:
+            play_bounce_sound()
             self.ball.sety(top_border)
             self.dy *= -1
 
         elif self.ball.ycor() < bottom_border:
+            play_bounce_sound()
             self.ball.sety(bottom_border)
             self.dy *= -1
 
@@ -157,10 +199,17 @@ class Game:
         self.window.win.onkeypress(self.paddle_left.move_down, 's')
         self.window.win.onkeypress(self.paddle_right.move_up, 'Up')
         self.window.win.onkeypress(self.paddle_right.move_down, 'Down')
-        self.window.win.onkeypress(self.hit_paddle, 't')
+        self.window.win.onkeypress(self.increase_game_speed, 'i')
+        self.window.win.onkeypress(self.decrease_game_speed, 'd')
 
     def update_scores(self):
         self.window.write_score(self.player_left, self.player_right)
+
+    def increase_game_speed(self):
+        self.ball.increase_speed()
+
+    def decrease_game_speed(self):
+        self.ball.decrease_speed()
 
     def is_goal(self):
         right_border = (WIDTH / 2) - self.ball.get_dimension() / 2
@@ -179,10 +228,12 @@ class Game:
     def hit_paddle(self):
         left_top, left_side, left_bottom, left_center = self.paddle_left.get_borders()
         if (left_side > self.ball.xcor() > left_center) and (left_top > self.ball.ycor() > left_bottom):
+            play_bounce_sound()
             self.ball.setx(left_side)
             self.ball.reverse_dx()
         right_top, right_side, right_bottom, right_center = self.paddle_right.get_borders()
         if (right_side < self.ball.xcor() < right_center) and (right_top > self.ball.ycor() > right_bottom):
+            play_bounce_sound()
             self.ball.setx(right_side)
             self.ball.reverse_dx()
 

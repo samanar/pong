@@ -1,9 +1,12 @@
 # pong
 ping game using turtle in python 
 
+
 ## Todo
 - [x] show scores on screen
 - [ ] add difficulty as an argument
-- [ ] add sound tracks for bouncing
-- [ ] add sound track for getting points 
-- [ ] add how to install and run documentation 
+- [x] add sound tracks for bouncing
+- [x] add sound track for getting points 
+- [x] add how to install and run documentation 
+- [ ] close game with q button
+- [ ] show divider in middle of screen
